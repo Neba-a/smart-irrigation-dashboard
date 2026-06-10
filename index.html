@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Irrigation Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <header>
+        <h1>🌱 SMART DUAL-ZONE IRRIGATION SYSTEM</h1>
+        <p>Real-Time Model Predictive Control Dashboard</p>
+    </header>
+
+    <div class="container">
+
+        <div class="card">
+            <h2>🌤 Weather</h2>
+            <p>Temperature: <span id="temp">--</span> °C</p>
+            <p>Humidity: <span id="humidity">--</span>%</p>
+            <p>Rain Forecast: <span id="rain">--</span> mm</p>
+            <p>Rain Chance: <span id="rainChance">--</span>%</p>
+        </div>
+
+        <div class="card">
+            <h2>⚙ System Status</h2>
+            <p>ESP32: 🟢 Online</p>
+            <p>MPC: 🟢 Running</p>
+            <p>Pump: <span id="pumpStatus">OFF</span></p>
+            <p>Mode: AUTO</p>
+        </div>
+
+        <div class="card">
+            <h2>💧 Water Savings</h2>
+            <p>Today's Usage: <span id="waterUsed">18</span> L</p>
+            <p>Efficiency: <span id="efficiency">28</span>%</p>
+        </div>
+
+        <div class="zone-card">
+            <h2>🌱 Zone 1</h2>
+
+            <p>Current Moisture</p>
+
+            <div class="progress">
+                <div class="progress-bar" id="zone1Bar"></div>
+            </div>
+
+            <p><span id="zone1Value">65</span>%</p>
+
+            <p>Target: 70%</p>
+
+            <p>Valve: <span id="valve1">ON</span></p>
+        </div>
+
+        <div class="zone-card">
+            <h2>🌱 Zone 2</h2>
+
+            <p>Current Moisture</p>
+
+            <div class="progress">
+                <div class="progress-bar" id="zone2Bar"></div>
+            </div>
+
+            <p><span id="zone2Value">52</span>%</p>
+
+            <p>Target: 65%</p>
+
+            <p>Valve: <span id="valve2">OFF</span></p>
+        </div>
+
+        <div class="mpc-card">
+            <h2>🧠 MPC Decision Center</h2>
+
+            <p>Predicted Moisture: <span id="prediction">64</span>%</p>
+
+            <p>Recommended Water: <span id="recommended">2.3</span> L</p>
+
+            <p>Expected Saving: <span id="saving">17</span>%</p>
+
+            <p>
+                Decision:
+                <strong id="decision">
+                    Waiting...
+                </strong>
+            </p>
+        </div>
+
+    </div>
+
+    <div class="graph-container">
+        <canvas id="moistureChart"></canvas>
+    </div>
+
+    <p>
+        Last Update:
+        <span id="lastUpdate">--:--</span>
+    </p>
+
+    <div class="alerts">
+        <h2>⚠ Alerts</h2>
+
+        <p id="alertText">
+            System monitoring weather...
+        </p>
+
+        <p>
+            Reservoir Level:
+            <span id="reservoir">100</span>%
+        </p>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
