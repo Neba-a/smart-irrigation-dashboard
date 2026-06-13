@@ -12,109 +12,182 @@
 
 <body>
 
-    <header>
-        <h1>🌱 SMART DUAL-ZONE IRRIGATION SYSTEM</h1>
-        <p>Real-Time Model Predictive Control Dashboard</p>
-    </header>
+<header>
+    <h1>🌱 SMART DUAL-ZONE IRRIGATION SYSTEM</h1>
+    <p>Real-Time Model Predictive Control Dashboard</p>
+</header>
 
-    <div class="container">
+<div class="container">
 
-        <div class="card">
-            <h2>🌤 Weather</h2>
-            <p>Temperature: <span id="temp">--</span> °C</p>
-            <p>Humidity: <span id="humidity">--</span>%</p>
-            <p>Rain Forecast: <span id="rain">--</span> mm</p>
-            <p>Rain Chance: <span id="rainChance">--</span>%</p>
-        </div>
+    <!-- Weather -->
+    <div class="card">
+        <h2>🌤 Weather</h2>
 
-        <div class="card">
-            <h2>⚙ System Status</h2>
-            <p>ESP32: 🟢 Online</p>
-            <p>MPC: 🟢 Running</p>
-            <p>Pump: <span id="pumpStatus">OFF</span></p>
-            <p>Mode: AUTO</p>
-        </div>
+        <p>Temperature:
+            <span id="temp">--</span> °C
+        </p>
 
-        <div class="card">
-            <h2>💧 Water Savings</h2>
-            <p>Today's Usage: <span id="waterUsed">18</span> L</p>
-            <p>Efficiency: <span id="efficiency">28</span>%</p>
-        </div>
+        <p>Humidity:
+            <span id="humidity">--</span>%
+        </p>
 
-        <div class="zone-card">
-            <h2>🌱 Zone 1</h2>
+        <p>Rain:
+            <span id="rain">--</span> mm
+        </p>
 
-            <p>Current Moisture</p>
+        <p>Rain Chance:
+            <span id="rainChance">--</span>%
+        </p>
+    </div>
 
-            <div class="progress">
-                <div class="progress-bar" id="zone1Bar"></div>
+    <!-- System -->
+    <div class="card">
+        <h2>⚙ System Status</h2>
+
+        <p>ESP32: 🟢 Online</p>
+
+        <p>MPC: 🟢 Running</p>
+
+        <p>Pump:
+            <span id="pumpStatus">OFF</span>
+        </p>
+
+        <p>Mode: AUTO</p>
+    </div>
+
+    <!-- Water -->
+    <div class="card">
+        <h2>💧 Water Management</h2>
+
+        <p>Today's Usage:
+            <span id="waterUsed">1.0</span> L
+        </p>
+
+        <p>Recommended:
+            <span id="recommended">0.3</span> L
+        </p>
+
+        <p>Efficiency:
+            <span id="efficiency">95</span>%
+        </p>
+    </div>
+
+    <!-- Zone 1 -->
+    <div class="zone-card">
+
+        <h2>🌱 Zone 1</h2>
+
+        <p>Current Moisture</p>
+
+        <div class="progress">
+            <div class="progress-bar"
+                 id="zone1Bar"
+                 style="width:70%">
             </div>
-
-            <p><span id="zone1Value">65</span>%</p>
-
-            <p>Target: 70%</p>
-
-            <p>Valve: <span id="valve1">ON</span></p>
         </div>
 
-        <div class="zone-card">
-            <h2>🌱 Zone 2</h2>
+        <p>
+            <span id="zone1Value">70</span>%
+        </p>
 
-            <p>Current Moisture</p>
+        <p>Target: 70%</p>
 
-            <div class="progress">
-                <div class="progress-bar" id="zone2Bar"></div>
-            </div>
-
-            <p><span id="zone2Value">52</span>%</p>
-
-            <p>Target: 65%</p>
-
-            <p>Valve: <span id="valve2">OFF</span></p>
-        </div>
-
-        <div class="mpc-card">
-            <h2>🧠 MPC Decision Center</h2>
-
-            <p>Predicted Moisture: <span id="prediction">64</span>%</p>
-
-            <p>Recommended Water: <span id="recommended">2.3</span> L</p>
-
-            <p>Expected Saving: <span id="saving">17</span>%</p>
-
-            <p>
-                Decision:
-                <strong id="decision">
-                    Waiting...
-                </strong>
-            </p>
-        </div>
+        <p>
+            Valve:
+            <span id="valve1">OFF</span>
+        </p>
 
     </div>
 
-    <div class="graph-container">
-        <canvas id="moistureChart"></canvas>
+    <!-- Zone 2 -->
+    <div class="zone-card">
+
+        <h2>🌱 Zone 2</h2>
+
+        <p>Current Moisture</p>
+
+        <div class="progress">
+            <div class="progress-bar"
+                 id="zone2Bar"
+                 style="width:45%">
+            </div>
+        </div>
+
+        <p>
+            <span id="zone2Value">45</span>%
+        </p>
+
+        <p>Target: 65%</p>
+
+        <p>
+            Valve:
+            <span id="valve2">OFF</span>
+        </p>
+
     </div>
 
-    <p>
-        Last Update:
-        <span id="lastUpdate">--:--</span>
-    </p>
+    <!-- MPC -->
+    <div class="mpc-card">
 
-    <div class="alerts">
-        <h2>⚠ Alerts</h2>
+        <h2>🧠 MPC Decision Center</h2>
 
-        <p id="alertText">
-            System monitoring weather...
+        <p>
+            Predicted Moisture:
+            <span id="prediction">59</span>%
         </p>
 
         <p>
-            Reservoir Level:
-            <span id="reservoir">100</span>%
+            Recommended Water:
+            <span id="recommended">0.3</span> L
         </p>
+
+        <p>
+            Expected Saving:
+            <span id="saving">25</span>%
+        </p>
+
+        <p>
+            Decision:
+            <strong id="decision">
+                Monitoring
+            </strong>
+        </p>
+
     </div>
 
-    <script src="script.js"></script>
+</div>
+
+<!-- Graph -->
+
+<div class="graph-container">
+
+    <canvas id="moistureChart"></canvas>
+
+</div>
+
+<p>
+    Last Update:
+    <span id="lastUpdate">--:--:--</span>
+</p>
+
+<!-- Alerts -->
+
+<div class="alerts">
+
+    <h2>⚠ Alerts</h2>
+
+    <p id="alertText">
+        Zone 1 optimal. Zone 2 under observation.
+    </p>
+
+    <p>
+        Reservoir Level:
+        <span id="reservoir">100</span>%
+    </p>
+
+</div>
+
+<script src="script.js"></script>
 
 </body>
 </html>
