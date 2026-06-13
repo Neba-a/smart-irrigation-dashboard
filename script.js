@@ -1,21 +1,25 @@
 let moistureChart;
 
 let labels = ["0", "1", "2", "3", "4", "5"];
+
 let zone1Data = [70, 70, 70, 70, 70, 70];
 let zone2Data = [45, 45, 45, 45, 45, 45];
 
-const CYCLE_TIME = 11 * 1000; // 11 seconds cycle
+/* ================= STATE MACHINE ================= */
+
+let phase = 0; // 0 = idle, 1 = pumping, 2 = recovery
+let phaseStart = Date.now();
 
 /* ================= WEATHER ================= */
 
 async function getWeather() {
 
-    const url =
-        "https://api.open-meteo.com/v1/forecast?latitude=9.03&longitude=38.74&current=temperature_2m,relative_humidity_2m,rain&timezone=auto";
-
     try {
 
-        const res = await fetch(url);
+        const res = await fetch(
+            "https://api.open-meteo.com/v1/forecast?latitude=9.03&longitude=38.74&current=temperature_2m,relative_humidity_2m,rain&timezone=auto"
+        );
+
         const data = await res.json();
 
         document.getElementById("temp").textContent =
@@ -27,22 +31,26 @@ async function getWeather() {
         document.getElementById("rain").textContent =
             data.current.rain;
 
-        let rainChance =
+        document.getElementById("rainChance").textContent =
             Math.min(100, Math.round(data.current.rain * 20));
 
-        document.getElementById("rainChance").textContent =
-            rainChance;
-
     } catch (e) {
-        console.error(e);
+        console.error("Weather error", e);
     }
 }
 
-/* ================= CHART ================= */
+/* ================= CHART INIT (SAFE) ================= */
 
 function initChart() {
 
-    const ctx = document.getElementById("moistureChart");
+    const canvas = document.getElementById("moistureChart");
+
+    if (!canvas) {
+        console.error("Chart canvas missing!");
+        return;
+    }
+
+    const ctx = canvas.getContext("2d");
 
     moistureChart = new Chart(ctx, {
         type: "line",
@@ -63,6 +71,7 @@ function initChart() {
         },
         options: {
             responsive: true,
+            animation: false,
             scales: {
                 y: { min: 0, max: 100 }
             }
@@ -70,11 +79,11 @@ function initChart() {
     });
 }
 
-/* ================= MPC CYCLE ================= */
+/* ================= MPC STATE MACHINE ================= */
 
 function updateDashboard() {
 
-    let t = Date.now() % CYCLE_TIME;
+    let now = Date.now();
 
     let zone1 = 70;
     let zone2 = 45;
@@ -82,33 +91,48 @@ function updateDashboard() {
     let valve1 = "OFF";
     let valve2 = "OFF";
     let pump = "OFF";
-    let waterUsed = 0.0;
+    let waterUsed = 0.3;
 
-    /* -------- CYCLE PHASES -------- */
+    let elapsed = now - phaseStart;
 
-    if (t < 6000) {
+    /* -------- PHASE LOGIC -------- */
 
-        // 0–6s idle
-        valve2 = "OFF";
+    if (phase === 0) {
+        // IDLE (0–6s)
+        zone2 = 45;
         pump = "OFF";
+        valve2 = "OFF";
         waterUsed = 0.3;
 
-    } else if (t < 11000) {
+        if (elapsed > 6000) {
+            phase = 1;
+            phaseStart = now;
+        }
 
-        // irrigation ON
-        valve2 = "ON";
+    } else if (phase === 1) {
+        // PUMP ON (5s)
+        zone2 = 45;
         pump = "ON";
+        valve2 = "ON";
         waterUsed = 0.3;
 
-    } else {
+        if (elapsed > 5000) {
+            phase = 2;
+            phaseStart = now;
+        }
 
-        // reset phase (after cycle end)
-        valve2 = "OFF";
+    } else if (phase === 2) {
+        // RECOVERY (moisture increases)
         pump = "OFF";
+        valve2 = "OFF";
         waterUsed = 0.6;
 
-        // moisture increases after irrigation
-        zone2 = 48 + Math.floor((Date.now() / CYCLE_TIME) % 5) * 3;
+        zone2 = 48 + (Math.floor(Date.now() / 10000) % 5) * 3;
+
+        if (elapsed > 4000) {
+            phase = 0;
+            phaseStart = now;
+        }
     }
 
     /* -------- UI -------- */
@@ -126,33 +150,31 @@ function updateDashboard() {
     document.getElementById("waterUsed").textContent =
         waterUsed.toFixed(1);
 
-    document.getElementById("prediction").textContent = "59";
-    document.getElementById("recommended").textContent = "0.3";
-
     document.getElementById("decision").textContent =
         pump === "ON" ? "Irrigating Zone 2" : "Monitoring";
 
     document.getElementById("lastUpdate").textContent =
         new Date().toLocaleTimeString();
 
-    /* -------- CHART -------- */
-
-    zone1Data.push(zone1);
-    zone2Data.push(zone2);
-
-    zone1Data.shift();
-    zone2Data.shift();
-
-    labels.push(new Date().toLocaleTimeString());
-    labels.shift();
+    /* -------- CHART UPDATE (SAFE GUARD) -------- */
 
     if (moistureChart) {
+
+        zone1Data.push(zone1);
+        zone2Data.push(zone2);
+
+        zone1Data.shift();
+        zone2Data.shift();
+
+        labels.push(new Date().toLocaleTimeString());
+        labels.shift();
+
         moistureChart.data.labels = labels;
         moistureChart.update();
     }
 }
 
-/* ================= START ================= */
+/* ================= START SYSTEM ================= */
 
 window.onload = function () {
 
