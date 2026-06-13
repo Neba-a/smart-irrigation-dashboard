@@ -1,120 +1,51 @@
-let moistureChart;
-
-let labels = ["0", "1", "2", "3", "4", "5"];
-
-let zone1Data = [70, 70, 70, 70, 70, 70];
-let zone2Data = [45, 45, 45, 45, 45, 45];
-
-let cycleCount = 0; // 👈 for water usage tracking
-
-/* ================= WEATHER ================= */
-
-async function getWeather() {
-
-    const url =
-        "https://api.open-meteo.com/v1/forecast?latitude=9.03&longitude=38.74&current=temperature_2m,relative_humidity_2m,rain&timezone=auto";
-
-    try {
-
-        const response = await fetch(url);
-        const data = await response.json();
-
-        document.getElementById("temp").textContent =
-            data.current.temperature_2m;
-
-        document.getElementById("humidity").textContent =
-            data.current.relative_humidity_2m;
-
-        document.getElementById("rain").textContent =
-            data.current.rain;
-
-        document.getElementById("rainChance").textContent =
-            Math.min(100, Math.round(data.current.rain * 20));
-
-    } catch (err) {
-        console.error("Weather error:", err);
-    }
-}
-
-/* ================= CHART INIT ================= */
-
-function initChart() {
-
-    const ctx = document.getElementById("moistureChart").getContext("2d");
-
-    moistureChart = new Chart(ctx, {
-
-        type: "line",
-
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: "Zone 1 Moisture",
-                    data: zone1Data,
-                    borderWidth: 3
-                },
-                {
-                    label: "Zone 2 Moisture",
-                    data: zone2Data,
-                    borderWidth: 3
-                }
-            ]
-        },
-
-        options: {
-            responsive: true,
-            animation: false, // 👈 prevents disappearing effect
-            scales: {
-                y: {
-                    min: 0,
-                    max: 100
-                }
-            }
-        }
-    });
-}
-
-/* ================= DASHBOARD ================= */
-
 function updateDashboard() {
 
     let cycleTime = Date.now() % 11000;
 
-    let zone1 = 70;
-    let zone2 = 45;
+    /* ---------------- ZONE 1 (±2% fluctuation) ---------------- */
+    let zone1 = 70 + Math.floor(Math.random() * 5) - 2;
+
+    /* ---------------- ZONE 2 STATE ---------------- */
+    let zone2;
 
     let valve1 = "OFF";
     let valve2 = "OFF";
     let pump = "OFF";
 
-    let waterUsed = 1.0 + (cycleCount * 0.3); // 👈 REQUIRED FIX
+    let waterUsed = 1.0 + (cycleCount * 0.3);
 
-    /* ---------------- CYCLE LOGIC ---------------- */
+    /* ---------------- CYCLE ---------------- */
 
-    if (cycleTime >= 6000) {
+    let irrigating = cycleTime >= 6000 && cycleTime < 11000;
 
-        // irrigation phase (6–11s)
+    if (irrigating) {
+
         pump = "ON";
         valve2 = "ON";
 
+        // moisture increases during irrigation
+        zone2 = (zone2Data[zone2Data.length - 1] || 45) + 0.6;
+
     } else {
 
-        // idle phase
         pump = "OFF";
         valve2 = "OFF";
+
+        // moisture returns toward baseline 45%
+        let current = zone2Data[zone2Data.length - 1] || 45;
+
+        zone2 = current - (current - 45) * 0.3;
     }
 
-    /* ---------------- END OF CYCLE UPDATE ---------------- */
-
+    /* ---------------- cycle counter ---------------- */
     if (cycleTime < 100) {
-        cycleCount++; // 👈 increases every new cycle
+        cycleCount++;
     }
 
     /* ---------------- UI ---------------- */
 
     document.getElementById("zone1Value").textContent = zone1;
-    document.getElementById("zone2Value").textContent = zone2;
+    document.getElementById("zone2Value").textContent = zone2.toFixed(1);
 
     document.getElementById("zone1Bar").style.width = zone1 + "%";
     document.getElementById("zone2Bar").style.width = zone2 + "%";
@@ -132,7 +63,7 @@ function updateDashboard() {
     document.getElementById("lastUpdate").textContent =
         new Date().toLocaleTimeString();
 
-    /* ---------------- CHART UPDATE (SAFE) ---------------- */
+    /* ---------------- CHART ---------------- */
 
     zone1Data.push(zone1);
     zone2Data.push(zone2);
@@ -149,19 +80,6 @@ function updateDashboard() {
         moistureChart.data.datasets[0].data = zone1Data;
         moistureChart.data.datasets[1].data = zone2Data;
 
-        moistureChart.update('none'); // 👈 prevents disappearing
+        moistureChart.update('none');
     }
 }
-
-/* ================= START SYSTEM ================= */
-
-window.onload = function () {
-
-    initChart();
-
-    getWeather();
-    updateDashboard();
-
-    setInterval(updateDashboard, 3000);
-    setInterval(getWeather, 300000);
-};
