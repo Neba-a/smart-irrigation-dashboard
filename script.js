@@ -1,6 +1,7 @@
 let startTime = Date.now();
 
-/* ---------------- WEATHER FUNCTION ---------------- */
+/* ================= WEATHER ================= */
+
 async function getWeather() {
 
     const url =
@@ -20,12 +21,12 @@ async function getWeather() {
         document.getElementById("rain").textContent =
             data.current.rain;
 
-        let rainChance = Math.min(100, Math.round(data.current.rain * 20));
+        let rainChance =
+            Math.min(100, Math.round(data.current.rain * 20));
 
         document.getElementById("rainChance").textContent =
             rainChance;
 
-        // ONLY decision logic (NO pump control here anymore)
         if (data.current.rain > 3) {
 
             document.getElementById("decision").textContent =
@@ -37,22 +38,18 @@ async function getWeather() {
         } else {
 
             document.getElementById("decision").textContent =
-                "MPC Active";
+                "MPC Running";
 
             document.getElementById("alertText").textContent =
-                "Conditions suitable for irrigation.";
+                "System ready for irrigation control.";
         }
 
     } catch (error) {
-
         console.error("Weather API Error:", error);
-
-        document.getElementById("alertText").textContent =
-            "Weather data unavailable.";
     }
 }
 
-/* ---------------- CHART SETUP ---------------- */
+/* ================= CHART ================= */
 
 const ctx = document.getElementById("moistureChart");
 
@@ -66,9 +63,7 @@ const moistureChart = new Chart(ctx, {
     type: "line",
 
     data: {
-
         labels: labels,
-
         datasets: [
             {
                 label: "Zone 1 Moisture",
@@ -84,9 +79,7 @@ const moistureChart = new Chart(ctx, {
     },
 
     options: {
-
         responsive: true,
-
         scales: {
             y: {
                 min: 0,
@@ -96,11 +89,12 @@ const moistureChart = new Chart(ctx, {
     }
 });
 
-/* ---------------- DASHBOARD LOGIC ---------------- */
+/* ================= MPC CONTROL ================= */
 
 function updateDashboard() {
 
-    let elapsed = Math.floor((Date.now() - startTime) / 1000);
+    let elapsed =
+        Math.floor((Date.now() - startTime) / 1000);
 
     let zone1 = 70;
     let zone2;
@@ -109,7 +103,7 @@ function updateDashboard() {
     let pump;
     let waterUsed;
 
-    /* -------- TIMING SEQUENCE -------- */
+    /* ----- TIMING LOGIC ----- */
 
     if (elapsed < 6) {
 
@@ -124,13 +118,9 @@ function updateDashboard() {
         valve2 = "ON";
         pump = "ON";
 
-        if (elapsed < 7) {
-            waterUsed = 0.2;
-        } else if (elapsed < 10) {
-            waterUsed = 0.1;
-        } else {
-            waterUsed = 0.0;
-        }
+        if (elapsed < 7) waterUsed = 0.2;
+        else if (elapsed < 10) waterUsed = 0.1;
+        else waterUsed = 0.0;
 
     } else {
 
@@ -140,7 +130,7 @@ function updateDashboard() {
         waterUsed = 0.0;
     }
 
-    /* -------- UI UPDATE -------- */
+    /* ----- UI UPDATE ----- */
 
     document.getElementById("zone1Value").textContent = zone1;
     document.getElementById("zone2Value").textContent = zone2;
@@ -155,7 +145,7 @@ function updateDashboard() {
     document.getElementById("waterUsed").textContent =
         waterUsed.toFixed(1);
 
-    document.getElementById("prediction").textContent = 59;
+    document.getElementById("prediction").textContent = "59";
     document.getElementById("recommended").textContent = "0.3";
 
     if (pump === "ON") {
@@ -163,14 +153,12 @@ function updateDashboard() {
             "Irrigating Zone 2";
     }
 
-    /* -------- ALERTS -------- */
-
     if (pump === "ON") {
         document.getElementById("alertText").textContent =
             "Zone 2 irrigation active.";
     }
 
-    /* -------- GRAPH UPDATE -------- */
+    /* ----- GRAPH UPDATE ----- */
 
     zone1Data.push(zone1);
     zone2Data.push(zone2);
@@ -195,7 +183,7 @@ function updateDashboard() {
         new Date().toLocaleTimeString();
 }
 
-/* ---------------- START SYSTEM ---------------- */
+/* ================= START ================= */
 
 getWeather();
 updateDashboard();
