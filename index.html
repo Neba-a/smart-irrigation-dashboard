@@ -20,6 +20,7 @@
 
 <div class="container">
 
+    <!-- Weather Card -->
     <div class="card">
         <h2>🌤 Weather Conditions</h2>
 
@@ -29,36 +30,51 @@
         <p>Rain Chance: <span id="rainChance">10</span>%</p>
     </div>
 
+    <!-- System Status -->
     <div class="card">
         <h2>⚙ System Status</h2>
 
-        <p>ESP32: 🟡 Reading</p>
-        <p>MPC: 🟡 Reading</p>
+        <p>
+            ESP32:
+            <span id="esp32Status">Reading</span>
+        </p>
 
-        <p>Pump:
+        <p>
+            MPC:
+            <span id="mpcStatus">Reading</span>
+        </p>
+
+        <p>
+            Pump:
             <span id="pumpStatus">OFF</span>
         </p>
 
         <p>Mode: AUTO</p>
     </div>
 
+    <!-- Water Management -->
     <div class="card">
         <h2>💧 Water Management</h2>
 
-        <p>Today's Usage:
+        <p>
+            Today's Usage:
             <span id="waterUsed">0.4</span> L
         </p>
 
-        <p>Recommended:
+        <p>
+            Recommended:
             <span id="recommendedWater">0.2</span> L
         </p>
 
-        <p>Efficiency:
+        <p>
+            Efficiency:
             <span id="efficiency">98</span>%
         </p>
     </div>
 
+    <!-- Zone 1 -->
     <div class="zone-card">
+
         <h2>🌱 Zone 1</h2>
 
         <p>Current Moisture</p>
@@ -68,19 +84,26 @@
         </div>
 
         <p>
-            <span id="zone1Value">Monitoring</span>
+            <span id="zone1Value">Reading</span>
         </p>
 
-        <p>Target Moisture: <strong>40%</strong></p>
+        <p>
+            Target Moisture:
+            <strong>40%</strong>
+        </p>
 
         <p>Status: Optimal</p>
 
-        <p>Valve:
+        <p>
+            Valve:
             <span id="valve1">OFF</span>
         </p>
+
     </div>
 
+    <!-- Zone 2 -->
     <div class="zone-card">
+
         <h2>🌱 Zone 2</h2>
 
         <p>Current Moisture</p>
@@ -90,30 +113,40 @@
         </div>
 
         <p>
-            <span id="zone2Value">Monitoring</span>
+            <span id="zone2Value">Reading</span>
         </p>
 
-        <p>Target Moisture: <strong>47%</strong></p>
+        <p>
+            Target Moisture:
+            <strong>47%</strong>
+        </p>
 
         <p>Status: Controlled by MPC</p>
 
-        <p>Valve:
+        <p>
+            Valve:
             <span id="valve2">OFF</span>
         </p>
+
     </div>
 
+    <!-- MPC Card -->
     <div class="mpc-card">
+
         <h2>🧠 MPC Decision Center</h2>
 
-        <p>Predicted Moisture:
+        <p>
+            Predicted Moisture:
             <span id="prediction">47</span>%
         </p>
 
-        <p>Recommended Water:
+        <p>
+            Recommended Water:
             <span id="recommendedMPC">0.2</span> L
         </p>
 
-        <p>Expected Saving:
+        <p>
+            Expected Saving:
             <span id="saving">35</span>%
         </p>
 
@@ -121,18 +154,25 @@
             Decision:
             <strong id="decision">Reading</strong>
         </p>
+
     </div>
 
 </div>
+
+<!-- Chart -->
 
 <div class="graph-container">
     <canvas id="moistureChart"></canvas>
 </div>
 
+<!-- Last Update -->
+
 <div class="update-box">
     Last Update:
     <span id="lastUpdate">--:--:--</span>
 </div>
+
+<!-- Alerts -->
 
 <div class="alerts">
 
