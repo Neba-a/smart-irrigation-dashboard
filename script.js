@@ -1,10 +1,10 @@
-let startTime = Date.now();
-
 let moistureChart;
-let labels = ["0", "1", "2", "3", "4", "5"];
 
+let labels = ["0", "1", "2", "3", "4", "5"];
 let zone1Data = [70, 70, 70, 70, 70, 70];
 let zone2Data = [45, 45, 45, 45, 45, 45];
+
+const CYCLE_TIME = 11 * 1000; // 11 seconds cycle
 
 /* ================= WEATHER ================= */
 
@@ -15,8 +15,8 @@ async function getWeather() {
 
     try {
 
-        const response = await fetch(url);
-        const data = await response.json();
+        const res = await fetch(url);
+        const data = await res.json();
 
         document.getElementById("temp").textContent =
             data.current.temperature_2m;
@@ -33,54 +33,34 @@ async function getWeather() {
         document.getElementById("rainChance").textContent =
             rainChance;
 
-        if (data.current.rain > 3) {
-
-            document.getElementById("decision").textContent =
-                "Delay Irrigation";
-
-            document.getElementById("alertText").textContent =
-                "Rain detected. Irrigation postponed.";
-
-        } else {
-
-            document.getElementById("decision").textContent =
-                "MPC Running";
-
-            document.getElementById("alertText").textContent =
-                "System ready.";
-        }
-
-    } catch (err) {
-        console.error("Weather error:", err);
+    } catch (e) {
+        console.error(e);
     }
 }
 
-/* ================= CHART INIT ================= */
+/* ================= CHART ================= */
 
 function initChart() {
 
     const ctx = document.getElementById("moistureChart");
 
     moistureChart = new Chart(ctx, {
-
         type: "line",
-
         data: {
-            labels: labels,
+            labels,
             datasets: [
                 {
-                    label: "Zone 1 Moisture",
+                    label: "Zone 1",
                     data: zone1Data,
                     borderWidth: 3
                 },
                 {
-                    label: "Zone 2 Moisture",
+                    label: "Zone 2",
                     data: zone2Data,
                     borderWidth: 3
                 }
             ]
         },
-
         options: {
             responsive: true,
             scales: {
@@ -90,48 +70,48 @@ function initChart() {
     });
 }
 
-/* ================= MAIN DASHBOARD ================= */
+/* ================= MPC CYCLE ================= */
 
 function updateDashboard() {
 
-    let elapsed =
-        Math.floor((Date.now() - startTime) / 1000);
+    let t = Date.now() % CYCLE_TIME;
 
     let zone1 = 70;
-    let zone2;
+    let zone2 = 45;
+
     let valve1 = "OFF";
-    let valve2;
-    let pump;
-    let waterUsed;
+    let valve2 = "OFF";
+    let pump = "OFF";
+    let waterUsed = 0.0;
 
-    /* ----- TIMING LOGIC ----- */
+    /* -------- CYCLE PHASES -------- */
 
-    if (elapsed < 6) {
+    if (t < 6000) {
 
-        zone2 = 45;
+        // 0–6s idle
         valve2 = "OFF";
         pump = "OFF";
-        waterUsed = 1.0;
+        waterUsed = 0.3;
 
-    } else if (elapsed < 11) {
+    } else if (t < 11000) {
 
-        zone2 = 45;
+        // irrigation ON
         valve2 = "ON";
         pump = "ON";
-
-        if (elapsed < 7) waterUsed = 0.2;
-        else if (elapsed < 10) waterUsed = 0.1;
-        else waterUsed = 0.0;
+        waterUsed = 0.3;
 
     } else {
 
-        zone2 = 48;
+        // reset phase (after cycle end)
         valve2 = "OFF";
         pump = "OFF";
-        waterUsed = 0.0;
+        waterUsed = 0.6;
+
+        // moisture increases after irrigation
+        zone2 = 48 + Math.floor((Date.now() / CYCLE_TIME) % 5) * 3;
     }
 
-    /* ----- UI UPDATE ----- */
+    /* -------- UI -------- */
 
     document.getElementById("zone1Value").textContent = zone1;
     document.getElementById("zone2Value").textContent = zone2;
@@ -149,20 +129,13 @@ function updateDashboard() {
     document.getElementById("prediction").textContent = "59";
     document.getElementById("recommended").textContent = "0.3";
 
+    document.getElementById("decision").textContent =
+        pump === "ON" ? "Irrigating Zone 2" : "Monitoring";
+
     document.getElementById("lastUpdate").textContent =
         new Date().toLocaleTimeString();
 
-    if (pump === "ON") {
-        document.getElementById("decision").textContent =
-            "Irrigating Zone 2";
-
-        document.getElementById("alertText").textContent =
-            "Zone 2 irrigation active.";
-    }
-
-    /* ----- CHART UPDATE ----- */
-
-    if (!moistureChart) return;
+    /* -------- CHART -------- */
 
     zone1Data.push(zone1);
     zone2Data.push(zone2);
@@ -170,21 +143,16 @@ function updateDashboard() {
     zone1Data.shift();
     zone2Data.shift();
 
-    labels.push(
-        new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit"
-        })
-    );
-
+    labels.push(new Date().toLocaleTimeString());
     labels.shift();
 
-    moistureChart.data.labels = labels;
-    moistureChart.update();
+    if (moistureChart) {
+        moistureChart.data.labels = labels;
+        moistureChart.update();
+    }
 }
 
-/* ================= START SYSTEM ================= */
+/* ================= START ================= */
 
 window.onload = function () {
 
@@ -193,6 +161,6 @@ window.onload = function () {
     getWeather();
     updateDashboard();
 
-    setInterval(updateDashboard, 1000);
+    setInterval(updateDashboard, 3000);
     setInterval(getWeather, 300000);
 };
