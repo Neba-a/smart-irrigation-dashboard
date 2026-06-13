@@ -1,44 +1,54 @@
 let startTime = Date.now();
 
 function updateDashboard() {
-
     let elapsed =
-        Math.floor((Date.now() - startTime) / 1000);
+    Math.floor((Date.now() - startTime) / 1000);
 
-    let zone1 = 70;
-    let zone2;
-    let valve1 = "OFF";
-    let valve2;
-    let pump;
-    let waterUsed;
+let zone1;
+let zone2;
+let valve1;
+let valve2;
+let pump;
+let waterUsed;
 
-    if (elapsed < 6) {
+// Zone 1 always optimal
+zone1 = 70;
+valve1 = "OFF";
 
-        zone2 = 45;
-        valve2 = "OFF";
-        pump = "OFF";
-        waterUsed = 1.0;
+if (elapsed < 6) {
 
-    } else if (elapsed < 7) {
+    // Initial state
+    zone2 = 45;
+    valve2 = "OFF";
+    pump = "OFF";
+    waterUsed = 1.0;
 
-        zone2 = 45;
-        valve2 = "ON";
-        pump = "ON";
+} else if (elapsed < 11) {
+
+    // Irrigation period (5 seconds)
+    zone2 = 45;
+    valve2 = "ON";
+    pump = "ON";
+
+    if (elapsed < 7) {
         waterUsed = 0.2;
-
     } else if (elapsed < 10) {
-
-        zone2 = 45;
-        valve2 = "ON";
-        pump = "ON";
         waterUsed = 0.1;
-
     } else {
-
-        zone2 = 48;
-        valve2 = "OFF";
-        pump = "OFF";
         waterUsed = 0.0;
+    }
+
+} else {
+
+    // After irrigation
+    zone2 = 48;
+    valve2 = "OFF";
+    pump = "OFF";
+    waterUsed = 0.0;
+}
+
+    
+       
     }
 
     document.getElementById("zone1Value").textContent =
