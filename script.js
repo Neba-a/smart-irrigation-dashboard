@@ -1,17 +1,17 @@
 let moistureChart;
 
-const labels = Array(20).fill("");
-const zone1Data = Array(20).fill(43);
-const zone2Data = Array(20).fill(45);
+const labels = [];
+const zone1Data = [];
+const zone2Data = [];
 
-window.onload = function () {
+window.onload = () => {
 
     const ctx = document.getElementById("moistureChart");
 
     moistureChart = new Chart(ctx, {
         type: "line",
         data: {
-            labels: labels,
+            labels,
             datasets: [
                 {
                     label: "Zone 1 Moisture",
@@ -49,18 +49,18 @@ function updateDashboard() {
 
     const t = Math.floor(performance.now() / 1000);
 
-    let zone1Display = "Reading";
-    let zone2Display = "Reading";
-
-    let zone1Chart = 43;
-    let zone2Chart = 45;
-
-    let valve1 = "OFF";
-    let valve2 = "OFF";
-    let pump = "OFF";
-
     let esp32 = "Reading";
     let mpc = "Reading";
+
+    let pump = "OFF";
+    let valve1 = "OFF";
+    let valve2 = "OFF";
+
+    let zone1Text = "Reading";
+    let zone2Text = "Reading";
+
+    let zone1Value = 43;
+    let zone2Value = 45;
 
     let decision = "Reading";
 
@@ -72,145 +72,148 @@ function updateDashboard() {
 
     let reservoir = 70;
 
-    let alertText = "System collecting sensor data...";
+    let alertText =
+        "Reading soil moisture sensors...";
 
-    /* ==================================
-       STAGE 1 : READING (0-25 SEC)
-       ================================== */
+    /* --------------------------
+       0 - 25 seconds
+    -------------------------- */
 
     if (t < 25) {
 
-        zone1Display = "Reading";
-        zone2Display = "Reading";
-
-        alertText = "Reading soil moisture sensors...";
-
+        decision = "Reading";
     }
 
-    /* ==================================
-       STAGE 2 : MONITORING (25-30 SEC)
-       ================================== */
+    /* --------------------------
+       25 - 30 seconds
+    -------------------------- */
 
     else if (t < 30) {
 
         esp32 = "🟢 Online";
         mpc = "🟢 Running";
 
-        zone1Display = "43%";
-        zone2Display = "45%";
+        zone1Text = "43%";
+        zone2Text = "45%";
 
-        zone1Chart = 43;
-        zone2Chart = 45;
+        zone1Value = 43;
+        zone2Value = 45;
 
         decision = "Monitoring";
 
-        alertText = "Zone 1 optimal. Zone 2 under observation.";
-
+        alertText =
+            "Zone 1 optimal. Zone 2 under observation.";
     }
 
-    /* ==================================
-       STAGE 3 : IRRIGATION (30-36 SEC)
-       ================================== */
+    /* --------------------------
+       30 - 36 seconds
+    -------------------------- */
 
     else if (t < 36) {
 
         esp32 = "🟢 Online";
         mpc = "🟢 Running";
 
-        valve2 = "ON";
         pump = "ON";
+        valve2 = "ON";
 
-        zone1Display = "43%";
-        zone2Display = "Monitoring";
+        zone1Text = "43%";
+        zone2Text = "Monitoring";
 
-        zone1Chart = 43;
-        zone2Chart = 45;
+        zone1Value = 43;
+        zone2Value = 45;
 
         decision = "Irrigating Zone 2";
 
-        alertText = "Irrigation active for Zone 2.";
-
+        alertText =
+            "Pump active. Irrigating Zone 2.";
     }
 
-    /* ==================================
-       STAGE 4 : 47% (36-39 SEC)
-       ================================== */
+    /* --------------------------
+       36 - 39 seconds
+    -------------------------- */
 
     else if (t < 39) {
 
         esp32 = "🟢 Online";
         mpc = "🟢 Running";
 
-        valve2 = "ON";
         pump = "ON";
+        valve2 = "ON";
 
-        zone1Display = "43%";
-        zone2Display = "47%";
+        zone1Text = "43%";
+        zone2Text = "47%";
 
-        zone1Chart = 43;
-        zone2Chart = 47;
+        zone1Value = 43;
+        zone2Value = 47;
 
         decision = "Irrigating Zone 2";
 
-        alertText = "Zone 2 approaching target moisture.";
-
+        alertText =
+            "Zone 2 approaching target.";
     }
 
-    /* ==================================
-       STAGE 5 : COMPLETE (39+ SEC)
-       ================================== */
+    /* --------------------------
+       39+ seconds
+    -------------------------- */
 
     else {
 
         esp32 = "🟢 Online";
         mpc = "🟢 Running";
 
-        const zone1Moisture =
+        const z1 =
             Math.max(
                 40,
                 43 - Math.floor((t - 39) / 60)
             );
 
-        zone1Display = zone1Moisture + "%";
-        zone2Display = "48%";
+        zone1Value = z1;
+        zone2Value = 48;
 
-        zone1Chart = zone1Moisture;
-        zone2Chart = 48;
+        zone1Text = z1 + "%";
+        zone2Text = "48%";
+
+        decision = "Monitoring";
 
         recommended = 0;
 
         reservoir = 55;
 
-        decision = "Monitoring";
-
         alertText =
-            "Target achieved. Irrigation stopped.";
-
+            "Target moisture reached. Irrigation stopped.";
     }
 
-    /* ==================================
-       UPDATE PAGE
-       ================================== */
+    /* --------------------------
+       UPDATE HTML
+    -------------------------- */
 
-    document.getElementById("esp32Status").textContent = esp32;
-    document.getElementById("mpcStatus").textContent = mpc;
+    document.getElementById("esp32Status").textContent =
+        esp32;
 
-    document.getElementById("pumpStatus").textContent = pump;
+    document.getElementById("mpcStatus").textContent =
+        mpc;
 
-    document.getElementById("valve1").textContent = valve1;
-    document.getElementById("valve2").textContent = valve2;
+    document.getElementById("pumpStatus").textContent =
+        pump;
+
+    document.getElementById("valve1").textContent =
+        valve1;
+
+    document.getElementById("valve2").textContent =
+        valve2;
 
     document.getElementById("zone1Value").textContent =
-        zone1Display;
+        zone1Text;
 
     document.getElementById("zone2Value").textContent =
-        zone2Display;
+        zone2Text;
 
     document.getElementById("zone1Bar").style.width =
-        zone1Chart + "%";
+        zone1Value + "%";
 
     document.getElementById("zone2Bar").style.width =
-        zone2Chart + "%";
+        zone2Value + "%";
 
     document.getElementById("waterUsed").textContent =
         waterUsed.toFixed(1);
@@ -239,22 +242,20 @@ function updateDashboard() {
     document.getElementById("lastUpdate").textContent =
         new Date().toLocaleTimeString();
 
-    /* ==================================
+    /* --------------------------
        CHART UPDATE
-       ================================== */
+    -------------------------- */
 
-    zone1Data.push(zone1Chart);
-    zone2Data.push(zone2Chart);
-
-    zone1Data.shift();
-    zone2Data.shift();
-
+    zone1Data.push(zone1Value);
+    zone2Data.push(zone2Value);
     labels.push("");
-    labels.shift();
 
-    moistureChart.data.labels = labels;
-    moistureChart.data.datasets[0].data = zone1Data;
-    moistureChart.data.datasets[1].data = zone2Data;
+    if (zone1Data.length > 20) {
 
-    moistureChart.update("none");
+        zone1Data.shift();
+        zone2Data.shift();
+        labels.shift();
+    }
+
+    moistureChart.update();
 }
