@@ -1,5 +1,11 @@
 let startTime = Date.now();
 
+let moistureChart;
+let labels = ["0", "1", "2", "3", "4", "5"];
+
+let zone1Data = [70, 70, 70, 70, 70, 70];
+let zone2Data = [45, 45, 45, 45, 45, 45];
+
 /* ================= WEATHER ================= */
 
 async function getWeather() {
@@ -41,55 +47,50 @@ async function getWeather() {
                 "MPC Running";
 
             document.getElementById("alertText").textContent =
-                "System ready for irrigation control.";
+                "System ready.";
         }
 
-    } catch (error) {
-        console.error("Weather API Error:", error);
+    } catch (err) {
+        console.error("Weather error:", err);
     }
 }
 
-/* ================= CHART ================= */
+/* ================= CHART INIT ================= */
 
-const ctx = document.getElementById("moistureChart");
+function initChart() {
 
-let labels = ["0", "1", "2", "3", "4", "5"];
+    const ctx = document.getElementById("moistureChart");
 
-let zone1Data = [70, 70, 70, 70, 70, 70];
-let zone2Data = [45, 45, 45, 45, 45, 45];
+    moistureChart = new Chart(ctx, {
 
-const moistureChart = new Chart(ctx, {
+        type: "line",
 
-    type: "line",
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: "Zone 1 Moisture",
+                    data: zone1Data,
+                    borderWidth: 3
+                },
+                {
+                    label: "Zone 2 Moisture",
+                    data: zone2Data,
+                    borderWidth: 3
+                }
+            ]
+        },
 
-    data: {
-        labels: labels,
-        datasets: [
-            {
-                label: "Zone 1 Moisture",
-                data: zone1Data,
-                borderWidth: 3
-            },
-            {
-                label: "Zone 2 Moisture",
-                data: zone2Data,
-                borderWidth: 3
-            }
-        ]
-    },
-
-    options: {
-        responsive: true,
-        scales: {
-            y: {
-                min: 0,
-                max: 100
+        options: {
+            responsive: true,
+            scales: {
+                y: { min: 0, max: 100 }
             }
         }
-    }
-});
+    });
+}
 
-/* ================= MPC CONTROL ================= */
+/* ================= MAIN DASHBOARD ================= */
 
 function updateDashboard() {
 
@@ -148,17 +149,20 @@ function updateDashboard() {
     document.getElementById("prediction").textContent = "59";
     document.getElementById("recommended").textContent = "0.3";
 
+    document.getElementById("lastUpdate").textContent =
+        new Date().toLocaleTimeString();
+
     if (pump === "ON") {
         document.getElementById("decision").textContent =
             "Irrigating Zone 2";
-    }
 
-    if (pump === "ON") {
         document.getElementById("alertText").textContent =
             "Zone 2 irrigation active.";
     }
 
-    /* ----- GRAPH UPDATE ----- */
+    /* ----- CHART UPDATE ----- */
+
+    if (!moistureChart) return;
 
     zone1Data.push(zone1);
     zone2Data.push(zone2);
@@ -178,15 +182,17 @@ function updateDashboard() {
 
     moistureChart.data.labels = labels;
     moistureChart.update();
-
-    document.getElementById("lastUpdate").textContent =
-        new Date().toLocaleTimeString();
 }
 
-/* ================= START ================= */
+/* ================= START SYSTEM ================= */
 
-getWeather();
-updateDashboard();
+window.onload = function () {
 
-setInterval(updateDashboard, 1000);
-setInterval(getWeather, 300000);
+    initChart();
+
+    getWeather();
+    updateDashboard();
+
+    setInterval(updateDashboard, 1000);
+    setInterval(getWeather, 300000);
+};
