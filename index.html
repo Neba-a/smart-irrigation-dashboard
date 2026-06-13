@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +9,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
 
 <header>
@@ -49,7 +47,10 @@
             <span id="pumpStatus">OFF</span>
         </p>
 
-        <p>Mode: AUTO</p>
+        <p>
+            Mode:
+            <strong>AUTO</strong>
+        </p>
     </div>
 
     <!-- Water Management -->
@@ -80,7 +81,11 @@
         <p>Current Moisture</p>
 
         <div class="progress">
-            <div class="progress-bar" id="zone1Bar"></div>
+            <div
+                class="progress-bar"
+                id="zone1Bar"
+                style="width:43%;">
+            </div>
         </div>
 
         <p>
@@ -92,7 +97,10 @@
             <strong>40%</strong>
         </p>
 
-        <p>Status: Optimal</p>
+        <p>
+            Status:
+            Optimal
+        </p>
 
         <p>
             Valve:
@@ -109,7 +117,11 @@
         <p>Current Moisture</p>
 
         <div class="progress">
-            <div class="progress-bar" id="zone2Bar"></div>
+            <div
+                class="progress-bar"
+                id="zone2Bar"
+                style="width:45%;">
+            </div>
         </div>
 
         <p>
@@ -121,7 +133,10 @@
             <strong>47%</strong>
         </p>
 
-        <p>Status: Controlled by MPC</p>
+        <p>
+            Status:
+            Controlled by MPC
+        </p>
 
         <p>
             Valve:
@@ -130,7 +145,7 @@
 
     </div>
 
-    <!-- MPC Card -->
+    <!-- MPC Decision Center -->
     <div class="mpc-card">
 
         <h2>🧠 MPC Decision Center</h2>
@@ -159,17 +174,25 @@
 
 </div>
 
-<!-- Chart -->
+<!-- Moisture Trend Graph -->
 
 <div class="graph-container">
+
+    <h2 style="margin-bottom:15px;color:#1b5e20;">
+        📈 Moisture Trend
+    </h2>
+
     <canvas id="moistureChart"></canvas>
+
 </div>
 
 <!-- Last Update -->
 
 <div class="update-box">
+
     Last Update:
     <span id="lastUpdate">--:--:--</span>
+
 </div>
 
 <!-- Alerts -->
@@ -181,6 +204,8 @@
     <p id="alertText">
         Initializing sensors...
     </p>
+
+    <br>
 
     <p>
         Reservoir Level:
